@@ -144,7 +144,14 @@ jobs:
           pip install requests
 
       - name: Building Applications
-        working-directory: ${{ env.IREPO }}
         run: |
 
           echo Skipping for now  ${{ matrix.module }}
+
+
+  warmup:
+    needs: [building-applications]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warmup Step
+        run: echo "Warming up..."
