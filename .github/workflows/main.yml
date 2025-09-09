@@ -1,0 +1,40 @@
+name: Dynamic Modular Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment (uat, lt, prod)"
+        required: true
+        default: "uat"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: [
+          auth,
+          notification,
+          graphql_mw,
+          self_service,
+          report,
+          cps_mw,
+          transaction_report,
+          bulk_parser,
+          transaction_processor,
+          scheduler,
+          report_processor,
+          admin_backend,
+          onboarding
+        ]
+    environment: ${{ matrix.module }}
+    steps:
+      - name: Start Deployment
+        run: |
+          echo "🚀 Deploying module: ${{ matrix.module }}"
+          echo "Target environment: ${{ github.event.inputs.environment }}"
+
+          # Example placeholder for real deploy command
+          # Replace this with helm/kubectl/terraform/etc.
+          # kubectl rollout restart deployment ${{ matrix.module }} -n ${{ github.event.inputs.environment }}
