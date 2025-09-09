@@ -1,40 +1,156 @@
-name: Dynamic Modular Deployment
+name: Build and Deploy MrPortal Applications
 
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Target environment (uat, lt, prod)"
+      ENVIRONMENT:
+        description: 'Select Environment'
         required: true
-        default: "uat"
+        default: 'uat'
+        type: choice
+        options:
+          - uat
+          - prod
+
+      terraform_plan:
+        description: 'Terraform Plan?'
+        required: true
+        default: false
+        type: boolean
+
+      k8s_jobs:
+        description: "Kubernetes Jobs Changes"
+        required: true
+        default: false
+        type: boolean
+
+      helm_changes:
+        description: 'Kubernetes Changes (HELM)?'
+        required: true
+        default: false
+        type: boolean
+
+      MWRELEASETAG:
+        description: 'MW Release Tag'
+        required: true
+        default: 'develop'
+
+      only_rollout_restart:
+        description: "Rolling restart only?"
+        required: true
+        default: false
+        type: boolean
+
+      INFRA_BRANCH:
+        description: 'Infra Release Tag'
+        required: true
+        default: 'develop'
+
+      Build_Applications:
+        description: 'Build Applications?'
+        required: true
+        default: false
+        type: boolean
+
+env:
+  REGION: ap-southeast-1
+  PROJECT: mrportal
+  GITHUB_ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
+  IREPO: mrportal-infra
+  MWREPO: bkash-merchant-portal
+
+
 
 jobs:
-  deploy:
+
+
+  cloning-infra-repos:
+    runs-on: self-hosted
+    steps:
+      - name: Remove Existing Infra Directory
+        run: |
+          # if [ -d "mrportal-infra" ]; then
+          #   sudo rm -rf mrportal-infra
+          # fi
+          echo Skipping for now
+
+      - name: Git Clone Infra Repository
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          # git clone --branch ${{ github.event.inputs.INFRA_BRANCH }} \
+          #   https://$GH_TOKEN@github.com/bKash-CloudEngineering/mrportal-infra.git
+          echo Skipping for now
+
+  building-applications:
+    if: ${{ github.event.inputs.Build_Applications == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         module: [
           auth,
           notification,
-          graphql_mw,
-          self_service,
+          graphql-mw,
+          self-service,
           report,
-          cps_mw,
-          transaction_report,
-          bulk_parser,
-          transaction_processor,
+          cps-mw,
+          transaction-report,
+          bulk-parser,
+          transaction-processor,
           scheduler,
-          report_processor,
-          admin_backend,
-          onboarding
+          report-processor,
+          admin-backend,
+          onboarding,
+          db-migrations
         ]
     environment: ${{ matrix.module }}
     steps:
-      - name: Start Deployment
-        run: |
-          echo "🚀 Deploying module: ${{ matrix.module }}"
-          echo "Target environment: ${{ github.event.inputs.environment }}"
+  
+      - name: Configure AWS Credentials via OIDC
+        run: echo "Skipping for now"
+        # uses: aws-actions/configure-aws-credentials@v2
+        # with:
+        #   role-to-assume: arn:aws:iam::797962984373:role/mrportal_github_action
+        #   aws-region: ${{ env.REGION }}
+        #   role-session-name: GitHubAction-OIDC
 
-          # Example placeholder for real deploy command
-          # Replace this with helm/kubectl/terraform/etc.
-          # kubectl rollout restart deployment ${{ matrix.module }} -n ${{ github.event.inputs.environment }}
+      - name: Checkout Infra Repository
+        run: echo "Skipping for now"
+        # uses: actions/checkout@v4
+        # with:
+        #   repository: bKash-CloudEngineering/mrportal-infra
+        #   ref: ${{ github.event.inputs.INFRA_BRANCH }}
+        #   token: ${{ secrets.GH_TOKEN }}
+        #   path: ${{ env.IREPO }}
+
+      - name: Checkout MW Repository
+        run: echo "Skipping for now"
+        # uses: actions/checkout@v4
+        # with:
+        #   repository: bKash-RE/${{ env.MWREPO }}
+        #   ref: ${{ github.event.inputs.MWRELEASETAG }}
+        #   token: ${{ secrets.GH_TOKEN }}
+        #   path: ${{ env.IREPO }}/${{ env.MWREPO }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+          pip install requests
+
+      - name: Building Applications
+        working-directory: ${{ env.IREPO }}
+        run: |
+          # ansible-playbook ansible/image_build.yaml \
+          #   -e workspace=/home/runner/work/mrportal-infra/mrportal-infra/mrportal-infra \
+          #   -e MWRepo=${{ env.MWREPO }} \
+          #   -e module=${{ matrix.module }} \
+          #   -e env=${{ github.event.inputs.ENVIRONMENT }} \
+          #   -e release_tag=${{ github.event.inputs.MWRELEASETAG }}
+
+          echo Skipping for now  ${{ matrix.module }}
