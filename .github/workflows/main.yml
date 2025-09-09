@@ -65,7 +65,7 @@ jobs:
 
 
   cloning-infra-repos:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Remove Existing Infra Directory
         run: |
