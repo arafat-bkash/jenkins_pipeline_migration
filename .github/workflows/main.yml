@@ -146,11 +146,5 @@ jobs:
       - name: Building Applications
         working-directory: ${{ env.IREPO }}
         run: |
-          # ansible-playbook ansible/image_build.yaml \
-          #   -e workspace=/home/runner/work/mrportal-infra/mrportal-infra/mrportal-infra \
-          #   -e MWRepo=${{ env.MWREPO }} \
-          #   -e module=${{ matrix.module }} \
-          #   -e env=${{ github.event.inputs.ENVIRONMENT }} \
-          #   -e release_tag=${{ github.event.inputs.MWRELEASETAG }}
 
           echo Skipping for now  ${{ matrix.module }}
